@@ -3,11 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	service2 "github.com/SianHH/frp-package/package"
-	"github.com/SianHH/frp-package/package/frpc"
-	"github.com/SianHH/frp-package/package/frps"
-	v1 "github.com/SianHH/frp-package/pkg/config/v1"
-	system_service "github.com/kardianos/service"
 	"gostc-sub/cli/service_option"
 	"gostc-sub/gui/global"
 	"gostc-sub/internal/common"
@@ -15,10 +10,17 @@ import (
 	"gostc-sub/pkg/env"
 	"gostc-sub/pkg/signal"
 	"gostc-sub/webui/backend/bootstrap"
+	"gostc-sub/webui/backend/router"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
+
+	service2 "github.com/SianHH/frp-package/package"
+	"github.com/SianHH/frp-package/package/frpc"
+	"github.com/SianHH/frp-package/package/frps"
+	v1 "github.com/SianHH/frp-package/pkg/config/v1"
+	system_service "github.com/kardianos/service"
 )
 
 var SvcCfg = &system_service.Config{
@@ -82,6 +84,10 @@ func (p *program) run() {
 	flag.BoolVar(&p2p, "p2p", false, "p2p client")
 	var wAddress string
 	flag.StringVar(&wAddress, "web-addr", "", "web ui address,example: 0.0.0.0:18080")
+	var wAccount string
+	flag.StringVar(&wAccount, "web-user", "", "web ui auth user")
+	var wPassword string
+	flag.StringVar(&wPassword, "web-pwd", "", "web ui auth pwd")
 
 	var vTunnels string
 	flag.StringVar(&vTunnels, "vts", "", "visit tunnels,example: vkey1:8080,vkey2:8081,vkey3:8082")
@@ -141,6 +147,7 @@ func (p *program) run() {
 	case "ui":
 		basePath, _ := os.Executable()
 		basePath = filepath.Dir(basePath)
+		router.SetBasicAuth(wAccount, wPassword)
 		moveWebuiCfgDir(basePath, basePath+"/data") // 移动旧配置文件路径
 		bootstrap.InitLogger()
 		bootstrap.InitFS(basePath + "/data")
